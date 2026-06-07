@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Pico SDK build output
+firmware/eps_node/build/
+*.uf2
+*.elf
+*.bin
+*.hex
+*.map
+*.dis
+
+# Local bench runs are generated artifacts. Keep only curated evidence logs.
+bench_artifacts/*.txt
+!bench_artifacts/one_pico_eps_cpp_demo_20260601_235703.txt
+!bench_artifacts/stage2_rs485_demo_20260602_142519.txt
+!bench_artifacts/commanded_power_demo_20260606_003430.txt

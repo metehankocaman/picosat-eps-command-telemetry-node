@@ -1,0 +1,76 @@
+opened /dev/ttyACM0; waiting 1.0s for firmware
+
+== 1. link check ==
+tx PING seq=1: A5 5A 01 01 02 01 01 00 88 08
+rx seq=1 src=0x02 dst=0x01 type=ACK payload=01 00 00 00
+  ACK request=PING status=OK detail=0
+
+== 2. clear any old fault flags ==
+tx CLEAR_FAULTS seq=2: A5 5A 01 01 02 02 06 00 4F C8
+rx seq=2 src=0x02 dst=0x01 type=ACK payload=06 00 00 00
+  ACK request=CLEAR_FAULTS status=OK detail=0
+
+== 3. request NOMINAL ==
+tx REQUEST_NOMINAL seq=3: A5 5A 01 01 02 03 07 00 4E CC
+rx seq=3 src=0x02 dst=0x01 type=ACK payload=07 00 00 00
+  ACK request=REQUEST_NOMINAL status=OK detail=0
+
+== 4. command all measured loads off ==
+tx SET_LOADS seq=4: A5 5A 01 01 02 04 03 01 00 1C E8
+rx seq=4 src=0x02 dst=0x01 type=ACK payload=03 00 00 00
+  ACK request=SET_LOADS status=OK detail=0
+
+== 5. power telemetry with loads off ==
+tx GET_POWER_TELEMETRY seq=5: A5 5A 01 01 02 05 08 00 D0 6E
+rx seq=5 src=0x02 dst=0x01 type=POWER_TELEMETRY payload=D2 9B 04 00 01 00 01 FC 0C 00 00 00 00 FD FF 00 00
+  POWER uptime_ms=302034 mode=NOMINAL load_mask=0x00 sensor_status=0x01(PRESENT) bus_mV=3324 shunt_uV=0 current_mA=-0.3 power_mW=0
+
+== 6. turn on measured load 0 ==
+tx SET_LOADS seq=6: A5 5A 01 01 02 06 03 01 01 55 15
+rx seq=6 src=0x02 dst=0x01 type=ACK payload=03 00 00 00
+  ACK request=SET_LOADS status=OK detail=0
+
+== 7. power telemetry with load 0 on ==
+tx GET_POWER_TELEMETRY seq=7: A5 5A 01 01 02 07 08 00 B0 00
+rx seq=7 src=0x02 dst=0x01 type=POWER_TELEMETRY payload=CA 9D 04 00 01 01 01 FC 0C 7C 01 00 00 24 00 0E 00
+  POWER uptime_ms=302538 mode=NOMINAL load_mask=0x01 sensor_status=0x01(PRESENT) bus_mV=3324 shunt_uV=380 current_mA=3.6 power_mW=14
+
+== 8. turn on measured loads 0 and 1 ==
+tx SET_LOADS seq=8: A5 5A 01 01 02 08 03 01 03 4D 97
+rx seq=8 src=0x02 dst=0x01 type=ACK payload=03 00 00 00
+  ACK request=SET_LOADS status=OK detail=0
+
+== 9. power telemetry with loads 0 and 1 on ==
+tx GET_POWER_TELEMETRY seq=9: A5 5A 01 01 02 09 08 00 B1 1B
+rx seq=9 src=0x02 dst=0x01 type=POWER_TELEMETRY payload=BE 9F 04 00 01 03 01 04 0D E4 02 00 00 48 00 16 00
+  POWER uptime_ms=303038 mode=NOMINAL load_mask=0x03 sensor_status=0x01(PRESENT) bus_mV=3332 shunt_uV=740 current_mA=7.2 power_mW=22
+
+== 10. inject fault and enter SAFE ==
+tx INJECT_FAULT seq=10: A5 5A 01 01 02 0A 05 02 01 00 76 E2
+rx seq=10 src=0x02 dst=0x01 type=ACK payload=05 00 01 00
+  ACK request=INJECT_FAULT status=OK detail=1
+
+== 11. power telemetry in SAFE ==
+tx GET_POWER_TELEMETRY seq=11: A5 5A 01 01 02 0B 08 00 D1 75
+rx seq=11 src=0x02 dst=0x01 type=POWER_TELEMETRY payload=B6 A1 04 00 02 00 01 08 0D 14 00 00 00 01 00 00 00
+  POWER uptime_ms=303542 mode=SAFE load_mask=0x00 sensor_status=0x01(PRESENT) bus_mV=3336 shunt_uV=20 current_mA=0.1 power_mW=0
+
+== 12. clear fault flags ==
+tx CLEAR_FAULTS seq=12: A5 5A 01 01 02 0C 06 00 4E D3
+rx seq=12 src=0x02 dst=0x01 type=ACK payload=06 00 00 00
+  ACK request=CLEAR_FAULTS status=OK detail=0
+
+== 13. request NOMINAL after clearing faults ==
+tx REQUEST_NOMINAL seq=13: A5 5A 01 01 02 0D 07 00 4F D7
+rx seq=13 src=0x02 dst=0x01 type=ACK payload=07 00 00 00
+  ACK request=REQUEST_NOMINAL status=OK detail=0
+
+== 14. turn on measured load 0 after recovery ==
+tx SET_LOADS seq=14: A5 5A 01 01 02 0E 03 01 01 96 90
+rx seq=14 src=0x02 dst=0x01 type=ACK payload=03 00 00 00
+  ACK request=SET_LOADS status=OK detail=0
+
+== 15. power telemetry after recovery ==
+tx GET_POWER_TELEMETRY seq=15: A5 5A 01 01 02 0F 08 00 11 A9
+rx seq=15 src=0x02 dst=0x01 type=POWER_TELEMETRY payload=A1 A5 04 00 01 01 01 00 0D 72 01 00 00 25 00 0E 00
+  POWER uptime_ms=304545 mode=NOMINAL load_mask=0x01 sensor_status=0x01(PRESENT) bus_mV=3328 shunt_uV=370 current_mA=3.7 power_mW=14

@@ -1,0 +1,70 @@
+opened /dev/ttyACM0; waiting 1.0s for firmware
+
+== 1. link check ==
+tx PING seq=1: A5 5A 01 01 02 01 01 00 88 08
+rx seq=1 src=0x02 dst=0x01 type=ACK payload=01 00 00 00
+  ACK request=PING status=OK detail=0
+
+== 2. initial telemetry ==
+tx GET_TELEMETRY seq=2: A5 5A 01 01 02 02 02 00 8B 04
+rx seq=2 src=0x02 dst=0x01 type=TELEMETRY payload=F8 44 00 00 01 00 00 00 02 00 00 00 02 00
+  TELEMETRY uptime_ms=17656 mode=NOMINAL load_mask=0x00 fault_flags=0x0000 command_count=2 crc_error_count=0 last_command=GET_TELEMETRY last_status=OK
+
+== 3. turn on load 0 ==
+tx SET_LOADS seq=3: A5 5A 01 01 02 03 03 01 01 10 A9
+rx seq=3 src=0x02 dst=0x01 type=ACK payload=03 00 00 00
+  ACK request=SET_LOADS status=OK detail=0
+
+== 4. turn on loads 0 and 1 ==
+tx SET_LOADS seq=4: A5 5A 01 01 02 04 03 01 03 7F D8
+rx seq=4 src=0x02 dst=0x01 type=ACK payload=03 00 00 00
+  ACK request=SET_LOADS status=OK detail=0
+
+== 5. telemetry after load command ==
+tx GET_TELEMETRY seq=5: A5 5A 01 01 02 05 02 00 1B 81
+rx seq=5 src=0x02 dst=0x01 type=TELEMETRY payload=E9 47 00 00 01 03 00 00 05 00 00 00 02 00
+  TELEMETRY uptime_ms=18409 mode=NOMINAL load_mask=0x03 fault_flags=0x0000 command_count=5 crc_error_count=0 last_command=GET_TELEMETRY last_status=OK
+
+== 6. inject fault and enter SAFE ==
+tx INJECT_FAULT seq=6: A5 5A 01 01 02 06 05 02 01 00 5D 69
+rx seq=6 src=0x02 dst=0x01 type=ACK payload=05 00 01 00
+  ACK request=INJECT_FAULT status=OK detail=1
+
+== 7. attempt load command while SAFE ==
+tx SET_LOADS seq=7: A5 5A 01 01 02 07 03 01 0F 2F 82
+rx seq=7 src=0x02 dst=0x01 type=NACK payload=03 02 01 00
+  NACK request=SET_LOADS status=BAD_STATE detail=1
+
+== 8. telemetry in SAFE ==
+tx GET_TELEMETRY seq=8: A5 5A 01 01 02 08 02 00 4A C3
+rx seq=8 src=0x02 dst=0x01 type=TELEMETRY payload=DA 4A 00 00 02 00 01 00 08 00 00 00 02 00
+  TELEMETRY uptime_ms=19162 mode=SAFE load_mask=0x00 fault_flags=0x0001 command_count=8 crc_error_count=0 last_command=GET_TELEMETRY last_status=OK
+
+== 9. request NOMINAL while fault active ==
+tx REQUEST_NOMINAL seq=9: A5 5A 01 01 02 09 07 00 8F 0B
+rx seq=9 src=0x02 dst=0x01 type=NACK payload=07 04 01 00
+  NACK request=REQUEST_NOMINAL status=FAULT_ACTIVE detail=1
+
+== 10. clear fault flags ==
+tx CLEAR_FAULTS seq=10: A5 5A 01 01 02 0A 06 00 EE 61
+rx seq=10 src=0x02 dst=0x01 type=ACK payload=06 00 00 00
+  ACK request=CLEAR_FAULTS status=OK detail=0
+
+== 11. request NOMINAL after clearing faults ==
+tx REQUEST_NOMINAL seq=11: A5 5A 01 01 02 0B 07 00 EF 65
+rx seq=11 src=0x02 dst=0x01 type=ACK payload=07 00 00 00
+  ACK request=REQUEST_NOMINAL status=OK detail=0
+
+== 12. turn on load 0 after recovery ==
+tx SET_LOADS seq=12: A5 5A 01 01 02 0C 03 01 01 FE 7D
+rx seq=12 src=0x02 dst=0x01 type=ACK payload=03 00 00 00
+  ACK request=SET_LOADS status=OK detail=0
+
+== 13. send deliberately corrupted CRC ==
+tx PING seq=13: A5 5A 01 01 02 0D 01 00 E9 7C
+no response to corrupted frame, as expected
+
+== 14. telemetry after bad CRC ==
+tx GET_TELEMETRY seq=14: A5 5A 01 01 02 0E 02 00 EA 71
+rx seq=14 src=0x02 dst=0x01 type=TELEMETRY payload=8C 5B 00 00 01 01 00 00 0D 00 01 00 02 00
+  TELEMETRY uptime_ms=23436 mode=NOMINAL load_mask=0x01 fault_flags=0x0000 command_count=13 crc_error_count=1 last_command=GET_TELEMETRY last_status=OK
