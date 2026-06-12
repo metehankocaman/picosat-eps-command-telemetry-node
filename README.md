@@ -32,6 +32,10 @@ Raspberry Pi Pico 2 W  (EPS node)
 The one-Pico USB EPS firmware is still included as a simpler bring-up and
 fallback path. The final demo uses the two-Pico RS-485 path.
 
+## Project Demonstration
+
+[![PicoSat EPS Node Demo](https://img.youtube.com/vi/h9m17SZwZaI/maxresdefault.jpg)](https://www.youtube.com/watch?v=h9m17SZwZaI)
+
 ## What It Demonstrates
 
 - Binary command/telemetry protocol with CRC-16/CCITT-FALSE protection.
